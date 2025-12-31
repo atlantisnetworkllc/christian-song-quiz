@@ -1,15 +1,30 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft, Music, Heart, Sparkles, Mail, Check, Loader2, Play, Gift, Shield, CheckCircle, Star, Pencil } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Music, Heart, Sparkles, Check, Loader2, Play, Gift, Shield, CheckCircle, Star, Pencil } from 'lucide-react';
 
-const CONFIG = {
-  N8N_WEBHOOK_URL: 'https://ton-n8n.app.n8n.cloud/webhook/prayer-song',
-  SYSTEME_IO_CHECKOUT: 'https://ton-compte.systeme.io/checkout/prayer-song',
-  SITE_NAME: 'PrayerSong',
-  PRICE: 99,
-  ORIGINAL_PRICE: 199,
+// Configuration - ces valeurs seront remplacées par les variables d'environnement sur Vercel
+const getConfig = () => {
+  if (typeof window === 'undefined') {
+    return {
+      N8N_WEBHOOK_URL: '',
+      SYSTEME_IO_CHECKOUT: '',
+      SITE_NAME: 'PrayerSong',
+      PRICE: 99,
+      ORIGINAL_PRICE: 199,
+    };
+  }
+  
+  return {
+    N8N_WEBHOOK_URL: window.ENV?.N8N_WEBHOOK_URL || 'https://n8n.christian-song.com/webhook/quiz-submit',
+    SYSTEME_IO_CHECKOUT: window.ENV?.CHECKOUT_URL || 'https://christian-song.com/checkout',
+    SITE_NAME: 'PrayerSong',
+    PRICE: 99,
+    ORIGINAL_PRICE: 199,
+  };
 };
+
+const CONFIG = getConfig();
 
 const colors = {
   primary: '#8B5CF6',
@@ -18,6 +33,144 @@ const colors = {
   cream: '#FFF8F0',
   creamDark: '#FEF3C7',
   text: '#1a1a2e',
+};
+
+const styles = {
+  container: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '1rem',
+    background: `linear-gradient(135deg, ${colors.cream}, #FFF5E6)`,
+  },
+  card: {
+    background: 'white',
+    borderRadius: '1.5rem',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    maxWidth: '32rem',
+    width: '100%',
+    overflow: 'hidden',
+  },
+  header: {
+    padding: '1.5rem',
+    textAlign: 'center',
+    borderBottom: '1px solid #E5E7EB',
+    background: `linear-gradient(135deg, ${colors.primary}11, ${colors.primary}05)`,
+  },
+  content: {
+    padding: '1.5rem',
+  },
+  title: {
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    marginBottom: '0.5rem',
+    color: colors.text,
+  },
+  subtitle: {
+    color: '#6B7280',
+    fontSize: '0.875rem',
+  },
+  label: {
+    display: 'block',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    marginBottom: '0.5rem',
+  },
+  input: {
+    width: '100%',
+    padding: '1rem',
+    border: '2px solid #E5E7EB',
+    borderRadius: '0.75rem',
+    fontSize: '1rem',
+    outline: 'none',
+  },
+  textarea: {
+    width: '100%',
+    padding: '1rem',
+    border: '2px solid #E5E7EB',
+    borderRadius: '0.75rem',
+    fontSize: '1rem',
+    outline: 'none',
+    resize: 'none',
+    fontFamily: 'inherit',
+  },
+  buttonGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '0.5rem',
+  },
+  buttonGrid2: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '0.5rem',
+  },
+  optionButton: {
+    padding: '0.75rem',
+    borderRadius: '0.75rem',
+    border: '2px solid #E5E7EB',
+    background: 'white',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  optionButtonSelected: {
+    padding: '0.75rem',
+    borderRadius: '0.75rem',
+    border: `2px solid ${colors.primary}`,
+    background: '#F3E8FF',
+    color: colors.primaryDark,
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    cursor: 'pointer',
+  },
+  navButtons: {
+    display: 'flex',
+    gap: '0.75rem',
+    marginTop: '2rem',
+  },
+  primaryButton: {
+    flex: 1,
+    padding: '1rem',
+    borderRadius: '0.75rem',
+    background: colors.primary,
+    color: 'white',
+    border: 'none',
+    fontWeight: '500',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+  },
+  secondaryButton: {
+    flex: 1,
+    padding: '1rem',
+    borderRadius: '0.75rem',
+    background: 'white',
+    color: colors.primary,
+    border: `2px solid ${colors.primary}`,
+    fontWeight: '500',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+  },
+  progressBar: {
+    height: '0.5rem',
+    background: '#E5E7EB',
+    borderRadius: '9999px',
+    overflow: 'hidden',
+    flex: 1,
+  },
+  progressFill: {
+    height: '100%',
+    background: colors.primary,
+    transition: 'width 0.5s',
+    borderRadius: '9999px',
+  },
 };
 
 const sampleSongs = [
@@ -76,13 +229,22 @@ export default function PrayerSongQuiz() {
   const handleSubmit = async () => {
     if (!canProceed()) return;
     setIsSubmitting(true);
-    const payload = { ...formData, timestamp: new Date().toISOString(), source: 'react-quiz' };
+
+    const payload = {
+      ...formData,
+      timestamp: new Date().toISOString(),
+      source: 'react-quiz'
+    };
+
     try {
-      await fetch(CONFIG.N8N_WEBHOOK_URL, {
+      const response = await fetch(CONFIG.N8N_WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+
+      if (!response.ok) throw new Error('Webhook failed');
+
       setIsComplete(true);
       setTimeout(() => {
         window.location.href = `${CONFIG.SYSTEME_IO_CHECKOUT}?email=${encodeURIComponent(formData.email)}`;
@@ -95,168 +257,91 @@ export default function PrayerSongQuiz() {
     }
   };
 
-  // Écran de succès
   if (isComplete) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: colors.cream }}>
-        <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: colors.checkout }}>
-            <Check size={40} className="text-white" />
+      <div style={{ ...styles.container, background: colors.cream }}>
+        <div style={{ ...styles.card, padding: '2rem', textAlign: 'center' }}>
+          <div style={{ width: '5rem', height: '5rem', borderRadius: '50%', background: colors.checkout, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            <Check size={40} color="white" />
           </div>
-          <h2 className="text-2xl font-bold mb-2" style={{ color: colors.text }}>Thank You! 🙏</h2>
-          <p className="text-gray-600 mb-4">Redirecting you to secure checkout...</p>
-          <Loader2 className="animate-spin mx-auto" style={{ color: colors.checkout }} />
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem', color: colors.text }}>Thank You! 🙏</h2>
+          <p style={{ color: '#6B7280', marginBottom: '1rem' }}>Redirecting you to secure checkout...</p>
+          <Loader2 style={{ animation: 'spin 1s linear infinite', margin: '0 auto', color: colors.checkout }} />
         </div>
       </div>
     );
   }
 
-  // Step 6 - Checkout Page (nouveau design)
   if (step === 6) {
     return (
-      <div className="min-h-screen p-4 pb-12" style={{ background: colors.cream }}>
-        <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-6 pt-6">
-            <h1 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: colors.text }}>Almost There! Complete Your Order</h1>
-            <p className="text-gray-600">You're just one click away from creating a beautiful, personalized song for <span style={{ color: colors.checkout }} className="font-semibold">{formData.name}</span>.</p>
-            <div className="inline-block mt-4 px-4 py-2 rounded-full text-white text-sm font-medium" style={{ background: colors.checkout }}>
+      <div style={{ minHeight: '100vh', padding: '1rem', background: colors.cream }}>
+        <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem', paddingTop: '1.5rem' }}>
+            <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '0.5rem', color: colors.text }}>Almost There! Complete Your Order</h1>
+            <p style={{ color: '#6B7280' }}>You're just one click away from creating a beautiful, personalized song for <span style={{ color: colors.checkout, fontWeight: '600' }}>{formData.name}</span>.</p>
+            <div style={{ display: 'inline-block', marginTop: '1rem', padding: '0.5rem 1rem', borderRadius: '9999px', background: colors.checkout, color: 'white', fontSize: '0.875rem', fontWeight: '500' }}>
               Expected song delivery date: {getDeliveryDate()}
             </div>
           </div>
 
-          {/* Order Summary + Email */}
-          <div className="grid md:grid-cols-2 gap-4 mb-4">
-            <div className="bg-white rounded-2xl p-5 border border-gray-200">
-              <div className="flex items-center gap-2 mb-4">
-                <Music size={20} style={{ color: colors.checkout }} />
-                <span className="font-bold">Your Custom Song Order</span>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ background: 'white', borderRadius: '1rem', padding: '1.25rem', border: '1px solid #E5E7EB' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                <Music size={20} color={colors.checkout} />
+                <span style={{ fontWeight: 'bold' }}>Your Custom Song Order</span>
               </div>
-              <div className="space-y-2 text-sm mb-4">
-                <div className="flex justify-between"><span className="text-gray-600">Song for:</span><span style={{ color: colors.checkout }} className="font-medium">{formData.name}</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Delivery:</span><span className="font-medium">{getDeliveryDate()}</span></div>
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                  <span style={{ color: '#6B7280' }}>Song for:</span>
+                  <span style={{ color: colors.checkout, fontWeight: '500' }}>{formData.name}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span style={{ color: '#6B7280' }}>Delivery:</span>
+                  <span style={{ fontWeight: '500' }}>{getDeliveryDate()}</span>
+                </div>
               </div>
-              <div className="border-t pt-3">
-                <div className="flex justify-between items-center">
+              <div style={{ borderTop: '1px solid #E5E7EB', paddingTop: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div className="font-medium">Custom Song</div>
-                    <span className="text-xs px-2 py-0.5 rounded text-orange-700" style={{ background: colors.creamDark }}>50% OFF</span>
+                    <div style={{ fontWeight: '500' }}>Custom Song</div>
+                    <span style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem', borderRadius: '0.25rem', color: '#92400E', background: colors.creamDark }}>50% OFF</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-gray-400 line-through text-sm mr-2">${CONFIG.ORIGINAL_PRICE}</span>
-                    <span className="font-bold text-lg">${CONFIG.PRICE} USD</span>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ color: '#9CA3AF', textDecoration: 'line-through', fontSize: '0.875rem', marginRight: '0.5rem' }}>${CONFIG.ORIGINAL_PRICE}</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>${CONFIG.PRICE} USD</span>
                   </div>
                 </div>
               </div>
-              <button onClick={() => setStep(1)} className="w-full mt-4 py-2 rounded-xl border-2 text-sm font-medium flex items-center justify-center gap-2" style={{ borderColor: colors.checkout, color: colors.checkout }}>
+              <button onClick={() => setStep(1)} style={{ width: '100%', marginTop: '1rem', padding: '0.5rem', borderRadius: '0.75rem', border: `2px solid ${colors.checkout}`, color: colors.checkout, background: 'white', fontSize: '0.875rem', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                 <Pencil size={16} /> Review or Edit Survey
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-gray-200">
-              <label className="block text-sm font-medium mb-2">Your Email Address</label>
-              <input type="email" value={formData.email} onChange={(e) => updateField('email', e.target.value)} placeholder="you@email.com" className="w-full p-3 border-2 rounded-xl focus:outline-none mb-4" style={{ borderColor: '#E5E7EB' }} />
-              <button onClick={handleSubmit} disabled={!canProceed() || isSubmitting} className="w-full py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ background: colors.checkout }}>
-                {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Gift size={20} />}
+            <div style={{ background: 'white', borderRadius: '1rem', padding: '1.25rem', border: '1px solid #E5E7EB' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>Your Email Address</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => updateField('email', e.target.value)}
+                placeholder="you@email.com"
+                style={{ ...styles.input, marginBottom: '1rem' }}
+              />
+              <button
+                onClick={handleSubmit}
+                disabled={!canProceed() || isSubmitting}
+                style={{ width: '100%', padding: '1rem', borderRadius: '0.75rem', background: colors.checkout, color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: (!canProceed() || isSubmitting) ? 0.5 : 1 }}
+              >
+                {isSubmitting ? <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> : <Gift size={20} />}
                 {isSubmitting ? 'Processing...' : 'Create My Song'}
               </button>
-              <div className="flex items-center justify-center gap-2 mt-3 text-sm" style={{ color: colors.checkout }}>
-                <CheckCircle size={16} /><span>30-Day Money Back Guarantee</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.75rem', fontSize: '0.875rem', color: colors.checkout }}>
+                <CheckCircle size={16} />
+                <span>30-Day Money Back Guarantee</span>
               </div>
             </div>
           </div>
 
-          {/* Limited Time Discount */}
-          <div className="rounded-2xl p-5 mb-4 border-2" style={{ background: colors.creamDark, borderColor: '#FCD34D' }}>
-            <div className="flex items-center gap-2 mb-2">
-              <Gift size={20} style={{ color: colors.checkout }} />
-              <span className="font-bold" style={{ color: colors.checkout }}>Limited Time Friendship Discount</span>
-            </div>
-            <p className="text-sm text-gray-700 mb-2">Our songs typically cost <span className="line-through">${CONFIG.ORIGINAL_PRICE}</span>, but we believe every friendship deserves to be celebrated for just <strong>${CONFIG.PRICE} USD for a limited time only</strong>.</p>
-            <p className="text-sm text-gray-700"><strong>Why only ${CONFIG.PRICE} USD?</strong> Thanks to generous donations and tips from our amazing customers, we're able to temporarily offer this special price for PrayerSongs made for friends.</p>
-          </div>
-
-          {/* Sample Songs */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200 mb-4">
-            <div className="flex items-center gap-2 mb-4">
-              <Music size={20} style={{ color: colors.checkout }} />
-              <span className="font-bold">Hear Other PrayerSongs We Made</span>
-            </div>
-            <div className="space-y-4">
-              {sampleSongs.map((song, i) => (
-                <div key={i} className="border-b last:border-0 pb-4 last:pb-0">
-                  <div className="flex items-center gap-3">
-                    <button className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: colors.checkout }}>
-                      <Play size={16} className="text-white ml-0.5" fill="white" />
-                    </button>
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{song.title}</div>
-                      <div className="text-xs text-gray-500">Ordered by {song.orderedBy}</div>
-                    </div>
-                    <span className="text-xs text-gray-400">0:00</span>
-                  </div>
-                  <p className="text-xs italic text-gray-600 mt-2 ml-13">{song.testimonial} — {song.orderedBy}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Money Back Guarantee */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200 mb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Shield size={20} style={{ color: colors.checkout }} />
-              <span className="font-bold">100% Money Back Guarantee</span>
-            </div>
-            <div className="space-y-3">
-              {[{ title: 'Not satisfied? Get a full refund', desc: 'No questions asked, no hassle' }, { title: '30-day guarantee', desc: 'Plenty of time to listen and decide' }, { title: 'Risk-free purchase', desc: 'Your satisfaction is our priority' }].map((item, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: colors.checkout }} />
-                  <div><div className="font-medium text-sm">{item.title}</div><div className="text-xs text-gray-500">{item.desc}</div></div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Second CTA */}
-          <button onClick={handleSubmit} disabled={!canProceed() || isSubmitting} className="w-full py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50 mb-2" style={{ background: colors.checkout }}>
-            <Gift size={20} /> Create My Song
-          </button>
-          <p className="text-center text-sm text-gray-500 mb-6">Ready to create something special for {formData.name}?</p>
-
-          {/* What You'll Get */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200 mb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Gift size={20} style={{ color: colors.checkout }} />
-              <span className="font-bold">What You'll Get</span>
-            </div>
-            <div className="space-y-3">
-              {[{ title: 'Radio-Quality Song', desc: 'Radio-quality PrayerSong, ready to share' }, { title: 'Personalized Lyrics', desc: `Custom written just for ${formData.name}` }, { title: '7-Day Delivery', desc: 'Perfect for last-minute gifts' }].map((item, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: colors.checkout }} />
-                  <div><div className="font-medium text-sm">{item.title}</div><div className="text-xs text-gray-500">{item.desc}</div></div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Why Choose */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200">
-            <div className="flex items-center gap-2 mb-3">
-              <Star size={20} style={{ color: colors.checkout }} />
-              <span className="font-bold">Why Choose PrayerSong?</span>
-            </div>
-            <div className="space-y-2">
-              {['Over 1,000 satisfied customers', '100% satisfaction guarantee', 'Secure payment processing', 'Delivered in just 7 days'].map((item, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <CheckCircle size={16} style={{ color: '#22C55E' }} />
-                  <span className="text-sm">{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Back Button */}
-          <button onClick={prevStep} className="w-full mt-6 py-3 rounded-xl font-medium border-2 flex items-center justify-center gap-2" style={{ borderColor: '#E5E7EB', color: '#6B7280' }}>
+          <button onClick={prevStep} style={{ width: '100%', marginTop: '1.5rem', padding: '0.75rem', borderRadius: '0.75rem', border: '2px solid #E5E7EB', color: '#6B7280', background: 'white', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
             <ChevronLeft size={20} /> Back to Previous Step
           </button>
         </div>
@@ -264,65 +349,87 @@ export default function PrayerSongQuiz() {
     );
   }
 
-  // Steps 1-5 (design original)
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: `linear-gradient(135deg, ${colors.cream}, #FFF5E6)` }}>
-      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden">
-        {/* Header */}
-        <div className="p-6 text-center border-b" style={{ background: `linear-gradient(135deg, ${colors.primary}11, ${colors.primary}05)` }}>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Music size={24} style={{ color: colors.primary }} />
-            <span className="font-bold text-lg">{CONFIG.SITE_NAME}</span>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <div style={styles.header}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <Music size={24} color={colors.primary} />
+            <span style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>{CONFIG.SITE_NAME}</span>
           </div>
-          <div className="flex items-center gap-2 mt-4">
-            <span className="text-sm text-gray-500">Step {step} of {totalSteps}</span>
-            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${(step / totalSteps) * 100}%`, background: colors.primary }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem' }}>
+            <span style={{ fontSize: '0.875rem', color: '#6B7280' }}>Step {step} of {totalSteps}</span>
+            <div style={styles.progressBar}>
+              <div style={{ ...styles.progressFill, width: `${(step / totalSteps) * 100}%` }} />
             </div>
           </div>
         </div>
 
-        <div className="p-6">
+        <div style={styles.content}>
           {step === 1 && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2" style={{ color: colors.text }}>Let's start with the basics</h2>
-                <p className="text-gray-500">Tell us about the special person in your life</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <h2 style={styles.title}>Let's start with the basics</h2>
+                <p style={styles.subtitle}>Tell us about the special person in your life</p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Who's this song for? *</label>
-                <div className="grid grid-cols-3 gap-2">
+                <label style={styles.label}>Who's this song for? *</label>
+                <div style={styles.buttonGrid}>
                   {['Husband', 'Wife', 'Father', 'Mother', 'Children', 'Sibling', 'Friend', 'Myself', 'Other'].map(option => (
-                    <button key={option} onClick={() => updateField('recipient', option)} className={`p-3 rounded-xl border-2 text-sm font-medium transition-all ${formData.recipient === option ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 hover:border-purple-300'}`}>{option}</button>
+                    <button
+                      key={option}
+                      onClick={() => updateField('recipient', option)}
+                      style={formData.recipient === option ? styles.optionButtonSelected : styles.optionButton}
+                    >
+                      {option}
+                    </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">What's their name? *</label>
-                <input type="text" value={formData.name} onChange={(e) => updateField('name', e.target.value)} placeholder="e.g., Sarah, Michael, Mom" className="w-full p-4 border-2 rounded-xl focus:outline-none focus:border-purple-500" />
+                <label style={styles.label}>What's their name? *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => updateField('name', e.target.value)}
+                  placeholder="e.g., Sarah, Michael, Mom"
+                  style={styles.input}
+                />
               </div>
             </div>
           )}
 
           {step === 2 && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2" style={{ color: colors.text }}>Choose a Genre 🎵</h2>
-                <p className="text-gray-500">What musical style speaks to their soul?</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <h2 style={styles.title}>Choose a Genre 🎵</h2>
+                <p style={styles.subtitle}>What musical style speaks to their soul?</p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Preferred Genre *</label>
-                <div className="grid grid-cols-2 gap-2">
+                <label style={styles.label}>Preferred Genre *</label>
+                <div style={styles.buttonGrid2}>
                   {['Pop', 'Country', 'Rock', 'R&B', 'Jazz', 'Worship', 'Gospel', 'Hip-Hop'].map(option => (
-                    <button key={option} onClick={() => updateField('genre', option)} className={`p-3 rounded-xl border-2 text-sm font-medium transition-all ${formData.genre === option ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 hover:border-purple-300'}`}>{option}</button>
+                    <button
+                      key={option}
+                      onClick={() => updateField('genre', option)}
+                      style={formData.genre === option ? styles.optionButtonSelected : styles.optionButton}
+                    >
+                      {option}
+                    </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Preferred Voice *</label>
-                <div className="grid grid-cols-3 gap-2">
+                <label style={styles.label}>Preferred Voice *</label>
+                <div style={styles.buttonGrid}>
                   {['Male Voice', 'Female Voice', 'No Preference'].map(option => (
-                    <button key={option} onClick={() => updateField('vocals', option)} className={`p-3 rounded-xl border-2 text-sm font-medium transition-all ${formData.vocals === option ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 hover:border-purple-300'}`}>{option}</button>
+                    <button
+                      key={option}
+                      onClick={() => updateField('vocals', option)}
+                      style={formData.vocals === option ? styles.optionButtonSelected : styles.optionButton}
+                    >
+                      {option}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -330,60 +437,85 @@ export default function PrayerSongQuiz() {
           )}
 
           {step === 3 && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <Heart className="mx-auto mb-2" size={32} style={{ color: colors.primary }} />
-                <h2 className="text-2xl font-bold mb-2" style={{ color: colors.text }}>What makes them special?</h2>
-                <p className="text-gray-500">Describe their character and qualities</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <Heart style={{ margin: '0 auto 0.5rem' }} size={32} color={colors.primary} />
+                <h2 style={styles.title}>What makes them special?</h2>
+                <p style={styles.subtitle}>Describe their character and qualities</p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Their beautiful qualities *</label>
-                <textarea value={formData.qualities} onChange={(e) => updateField('qualities', e.target.value)} placeholder="Are they patient, wise, funny, protective, encouraging? What makes them the incredible person they are?" rows={5} className="w-full p-4 border-2 rounded-xl focus:outline-none focus:border-purple-500 resize-none" />
+                <label style={styles.label}>Their beautiful qualities *</label>
+                <textarea
+                  value={formData.qualities}
+                  onChange={(e) => updateField('qualities', e.target.value)}
+                  placeholder="Are they patient, wise, funny, protective, encouraging? What makes them the incredible person they are?"
+                  rows={5}
+                  style={styles.textarea}
+                />
               </div>
             </div>
           )}
 
           {step === 4 && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <Sparkles className="mx-auto mb-2" size={32} style={{ color: colors.primary }} />
-                <h2 className="text-2xl font-bold mb-2" style={{ color: colors.text }}>Share your favorite memories</h2>
-                <p className="text-gray-500">What moments together do you treasure most?</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <Sparkles style={{ margin: '0 auto 0.5rem' }} size={32} color={colors.primary} />
+                <h2 style={styles.title}>Share your favorite memories</h2>
+                <p style={styles.subtitle}>What moments together do you treasure most?</p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Special moments together *</label>
-                <textarea value={formData.memories} onChange={(e) => updateField('memories', e.target.value)} placeholder="Share how you met, special years, inside jokes, or moments that made your relationship unique..." rows={5} className="w-full p-4 border-2 rounded-xl focus:outline-none focus:border-purple-500 resize-none" />
+                <label style={styles.label}>Special moments together *</label>
+                <textarea
+                  value={formData.memories}
+                  onChange={(e) => updateField('memories', e.target.value)}
+                  placeholder="Share how you met, special years, inside jokes, or moments that made your relationship unique..."
+                  rows={5}
+                  style={styles.textarea}
+                />
               </div>
             </div>
           )}
 
           {step === 5 && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2" style={{ color: colors.text }}>A message from your heart 💝</h2>
-                <p className="text-gray-500">What do you want them to know, feel, or remember?</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <h2 style={styles.title}>A message from your heart 💝</h2>
+                <p style={styles.subtitle}>What do you want them to know, feel, or remember?</p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Special message *</label>
-                <textarea value={formData.message} onChange={(e) => updateField('message', e.target.value)} placeholder="Include any Bible verses, prayers, or words that are meaningful to your relationship..." rows={5} className="w-full p-4 border-2 rounded-xl focus:outline-none focus:border-purple-500 resize-none" />
+                <label style={styles.label}>Special message *</label>
+                <textarea
+                  value={formData.message}
+                  onChange={(e) => updateField('message', e.target.value)}
+                  placeholder="Include any Bible verses, prayers, or words that are meaningful to your relationship..."
+                  rows={5}
+                  style={styles.textarea}
+                />
               </div>
             </div>
           )}
 
-          {/* Navigation */}
-          <div className="flex gap-3 mt-8">
+          <div style={styles.navButtons}>
             {step > 1 && (
-              <button onClick={prevStep} className="flex-1 py-4 rounded-xl font-medium border-2 flex items-center justify-center gap-2" style={{ borderColor: colors.primary, color: colors.primary }}>
+              <button onClick={prevStep} style={styles.secondaryButton}>
                 <ChevronLeft size={20} /> Back
               </button>
             )}
-            <button onClick={nextStep} disabled={!canProceed()} className="flex-1 py-4 rounded-xl font-medium text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: colors.primary }}>
+            <button
+              onClick={nextStep}
+              disabled={!canProceed()}
+              style={{ ...styles.primaryButton, opacity: canProceed() ? 1 : 0.5, cursor: canProceed() ? 'pointer' : 'not-allowed' }}
+            >
               Next <ChevronRight size={20} />
             </button>
           </div>
         </div>
       </div>
+      <style jsx>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
-
