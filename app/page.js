@@ -3,16 +3,13 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronLeft, Music, Heart, Sparkles, Check, Loader2, Play, Gift, Shield, CheckCircle, Star, Pencil } from 'lucide-react';
 
-// Configuration Next.js avec variables d'environnement
 const CONFIG = {
-  N8N_WEBHOOK_URL: process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://n8n.christian-song.com/webhook/quiz-submit',
-  SYSTEME_IO_CHECKOUT: process.env.NEXT_PUBLIC_CHECKOUT_URL || 'https://christian-song.com/checkout',
-  SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME || 'PrayerSong',
+  N8N_WEBHOOK_URL: 'https://n8n.christian-song.com/webhook/quiz-submit',
+  SYSTEME_IO_CHECKOUT: 'https://christian-song.com/checkout',
+  SITE_NAME: 'PrayerSong',
   PRICE: 99,
   ORIGINAL_PRICE: 199,
 };
-
-const CONFIG = getConfig();
 
 const colors = {
   primary: '#8B5CF6',
@@ -72,6 +69,7 @@ const styles = {
     borderRadius: '0.75rem',
     fontSize: '1rem',
     outline: 'none',
+    boxSizing: 'border-box',
   },
   textarea: {
     width: '100%',
@@ -82,6 +80,7 @@ const styles = {
     outline: 'none',
     resize: 'none',
     fontFamily: 'inherit',
+    boxSizing: 'border-box',
   },
   buttonGrid: {
     display: 'grid',
@@ -160,12 +159,6 @@ const styles = {
     borderRadius: '9999px',
   },
 };
-
-const sampleSongs = [
-  { title: 'Sent to Me from God', orderedBy: 'Pamela S.', testimonial: '"Absolutely beautiful, you captured such special moments... we both were crying."' },
-  { title: 'Saving Grace', orderedBy: 'Wendy B.', testimonial: '"This is absolutely breathtaking. I can\'t believe it... I am going to have a hard time keeping this a secret until Sunday."' },
-  { title: 'Stronger Now', orderedBy: 'Markeeta B.', testimonial: '"Very very wonderful song. I absolutely loved it and so did Dave!"' },
-];
 
 export default function PrayerSongQuiz() {
   const [step, setStep] = useState(1);
@@ -254,7 +247,9 @@ export default function PrayerSongQuiz() {
           </div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem', color: colors.text }}>Thank You! 🙏</h2>
           <p style={{ color: '#6B7280', marginBottom: '1rem' }}>Redirecting you to secure checkout...</p>
-          <Loader2 style={{ animation: 'spin 1s linear infinite', margin: '0 auto', color: colors.checkout }} />
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <Loader2 size={24} color={colors.checkout} style={{ animation: 'spin 1s linear infinite' }} />
+          </div>
         </div>
       </div>
     );
