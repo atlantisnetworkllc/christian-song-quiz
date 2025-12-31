@@ -3,25 +3,13 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronLeft, Music, Heart, Sparkles, Check, Loader2, Play, Gift, Shield, CheckCircle, Star, Pencil } from 'lucide-react';
 
-// Configuration - ces valeurs seront remplacées par les variables d'environnement sur Vercel
-const getConfig = () => {
-  if (typeof window === 'undefined') {
-    return {
-      N8N_WEBHOOK_URL: '',
-      SYSTEME_IO_CHECKOUT: '',
-      SITE_NAME: 'PrayerSong',
-      PRICE: 99,
-      ORIGINAL_PRICE: 199,
-    };
-  }
-  
-  return {
-    N8N_WEBHOOK_URL: window.ENV?.N8N_WEBHOOK_URL || 'https://n8n.christian-song.com/webhook/quiz-submit',
-    SYSTEME_IO_CHECKOUT: window.ENV?.CHECKOUT_URL || 'https://christian-song.com/checkout',
-    SITE_NAME: 'PrayerSong',
-    PRICE: 99,
-    ORIGINAL_PRICE: 199,
-  };
+// Configuration Next.js avec variables d'environnement
+const CONFIG = {
+  N8N_WEBHOOK_URL: process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://n8n.christian-song.com/webhook/quiz-submit',
+  SYSTEME_IO_CHECKOUT: process.env.NEXT_PUBLIC_CHECKOUT_URL || 'https://christian-song.com/checkout',
+  SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME || 'PrayerSong',
+  PRICE: 99,
+  ORIGINAL_PRICE: 199,
 };
 
 const CONFIG = getConfig();
