@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { ChevronRight, ChevronLeft, Music, Heart, Sparkles, Check, Loader2, Gift, CheckCircle, Pencil } from 'lucide-react';
 
 const CONFIG = {
-  N8N_WEBHOOK_URL: 'https://n8n.christian-song.com/webhook/quiz-submit',
+  N8N_WEBHOOK_URL: 'https://atlantisnetwork.app.n8n.cloud/webhook/quiz-submit',
   SYSTEME_IO_CHECKOUT: 'https://christian-song.com/checkout',
   SITE_NAME: 'PrayerSong',
   PRICE: 99,
